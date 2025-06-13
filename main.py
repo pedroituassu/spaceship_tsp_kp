@@ -4,7 +4,7 @@ from typing import NamedTuple, List, Tuple
 import math
 
 
-class Coordinates(NamedTuple):
+class Coordinate(NamedTuple):
     x: float
     y: float
     z: float
@@ -18,7 +18,7 @@ class Resource(NamedTuple):
 
 class Planet(NamedTuple):
     name: str
-    coord: Coordinates
+    coord: Coordinate
     resources: List[Resource]
 
 
@@ -27,9 +27,9 @@ class Spaceship:
     current_weight: float
     current_value: float
     resources: List[Resource]
-    base: Coordinates
+    base: Coordinate
 
-    def __init__(self, max_weight: float, base: Coordinates = Coordinates(0, 0, 0)):
+    def __init__(self, max_weight: float, base: Coordinate = Coordinate(0, 0, 0)):
         self.max_weight = max_weight
         self.current_weight = 0
         self.current_value = 0
@@ -61,7 +61,7 @@ class Spaceship:
                 return True
         return True
 
-    def _calculate_distance(self, coord1: Coordinates, coord2: Coordinates) -> float:
+    def _calculate_distance(self, coord1: Coordinate, coord2: Coordinate) -> float:
         return math.sqrt(
             (coord1.x - coord2.x) ** 2 +
             (coord1.y - coord2.y) ** 2 +
@@ -127,7 +127,7 @@ def load_planets_from_json(filename: str) -> List[Planet]:
         data = json.load(f)
     planets = []
     for p in data:
-        coord = Coordinates(**p['coord'])
+        coord = Coordinate(**p['coord'])
         resources = [Resource(**r) for r in p['resources']]
         planets.append(Planet(name=p['name'], coord=coord, resources=resources))
     return planets
