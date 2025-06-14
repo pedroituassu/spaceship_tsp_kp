@@ -2,6 +2,8 @@ import json
 import random
 from typing import NamedTuple, List, Tuple
 import math
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class Coordinate(NamedTuple):
@@ -132,6 +134,63 @@ def load_planets_from_json(filename: str) -> List[Planet]:
         planets.append(Planet(name=p['name'], coord=coord, resources=resources))
     return planets
 
+def plot_spaceship_route_3d(spaceship: Spaceship, route: Tuple[Planet, ...], title="Optimal Spaceship Route 3D"):
+    if not route:
+        print("No route to plot")
+        return
+    
+    x = [planet.coord.x for planet in route]
+    y = [planet.coord.y for planet in route]
+    z = [planet.coord.z for planet in route]
+    
+    x = [spaceship.base.x] + x + [spaceship.base.x]
+    y = [spaceship.base.y] + y + [spaceship.base.y]
+    z = [spaceship.base.z] + z + [spaceship.base.z]
+    
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    ax.plot(x, y, z, marker='o', linestyle='-', color='blue', linewidth=2, markersize=8)
+    
+    ax.scatter(spaceship.base.x, spaceship.base.y, spaceship.base.z, color='red', marker='s', s=100, label='Base')
+    
+    for i, planet in enumerate(route):
+        ax.text(planet.coord.x, planet.coord.y, planet.coord.z + 0.5, 
+                f'{i+1}. {planet.name}', 
+                fontsize=9, ha='center', va='bottom',
+                bbox=dict(boxstyle="round,pad=0.3", facecolor='lightblue', alpha=0.7))
+    
+    ax.text(spaceship.base.x, spaceship.base.y, spaceship.base.z - 0.8, 'BASE', 
+            fontsize=10, ha='center', va='top', weight='bold',
+            bbox=dict(boxstyle="round,pad=0.3", facecolor='red', alpha=0.7, edgecolor='darkred'))
+    
+    min_x, max_x = ax.get_xlim()
+    min_y, max_y = ax.get_ylim()
+    min_z, max_z = ax.get_zlim()
+    
+    text_x = (max_x + min_x) / 2
+    text_y = (max_y + min_y) / 2
+    text_z = min_z - (max_z - min_z) * 0.1
+    
+    status_text = (f'Total Value: {spaceship.current_value:.1f}\n'
+                  f'Weight: {spaceship.current_weight:.1f}/{spaceship.max_weight}\n'
+                  f'Resources: {len(spaceship.resources)}')
+    
+    ax.text(text_x, text_y, text_z, status_text, 
+            fontsize=12, color='darkgreen', weight='bold',
+            bbox=dict(facecolor='lightyellow', alpha=0.9, edgecolor='darkgreen', linewidth=2),
+            ha='center', va='top')
+    
+    ax.set_title(title, fontsize=14, weight='bold')
+    ax.set_xlabel("X Coordinate", fontsize=12)
+    ax.set_ylabel("Y Coordinate", fontsize=12)
+    ax.set_zlabel("Z Coordinate", fontsize=12)
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+    
+    plt.tight_layout()
+    plt.show()
+
 if __name__ == "__main__":
     all_planets = load_planets_from_json('planets.json')
     N = random.randint(5, 50)
@@ -144,3 +203,5 @@ if __name__ == "__main__":
     for i, planet in enumerate(optimal_path, 1):
         print(f"{i}. {planet.name}")
     print(f"\nFinal spaceship status: {ship}")
+
+    plot_spaceship_route_3d(spaceship=ship, route=optimal_path)
